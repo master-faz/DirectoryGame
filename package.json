@@ -1,0 +1,20 @@
+{
+  "name": "project2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "electron ."
+  },
+  "author": "JP",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^4.1.4",
+    "electron-rebuild": "^1.8.4"
+  },
+  "dependencies": {
+    "@mikewesthad/dungeon": "^1.2.2",
+    "fs-extra": "^7.0.1",
+    "phaser": "^3.16.2"
+  }
+}
