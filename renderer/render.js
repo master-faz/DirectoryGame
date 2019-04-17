@@ -1,4 +1,7 @@
 const Phaser = require('phaser');
+const { dialog, app, BrowserWindow } = require('electron').remote;
+
+win = remote.getCurrentWindow();
 
 class Player {
     constructor(scene, x, y) {
@@ -74,7 +77,7 @@ class Player {
     destroy() {
       this.sprite.destroy();
     }
-  }
+}
 
 class PlatformerScene extends Phaser.Scene {
   preload() {
@@ -154,4 +157,136 @@ const config = {
     }
   };
   
-  const game = new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+
+////// Directory code ///////
+process.chdir('C:\\Users\\runin\\Documents\\TestDir')
+let CurrentDirectory = process.cwd();
+
+function changeDirectory(direction, folder){
+  if(direction == 'up'){
+    let filePath = path.dirname(CurrentDirectory)
+    process.chdir(filePath)
+    CurrentDirectory = process.cwd();
+  }else if(direction == 'down'){
+    let filePath = path.join(CurrentDirectory, folder)
+    process.chdir(filePath)
+    CurrentDirectory = process.cwd();
+  }
+}
+
+// returns object with file info
+function getFileInfo(fileName){
+  try {
+    let filePath = path.join(CurrentDirectory, fileName)
+    let stats = fs.statSync(filePath);
+
+    // gets file size, creation time, last modification, and absolute path
+    let size = stats.size;
+    let creationTime = stats.birthtime.toLocaleString('en-US');
+    let modTime = stats.mtime.toLocaleString('en-US');
+    let absolutePath = filePath;
+    
+    const obj = {
+      size: size,
+      creationTime: creationTime,
+      modTime: modTime,
+      absolutePath: absolutePath
+    }
+
+    return obj;    
+  } 
+  catch (err) {
+    console.error(err)
+  }
+}
+
+// deletes file or directory
+async function remover(fileName){  
+  try {
+    let filePath = path.join(CurrentDirectory, fileName)
+    await fs.remove(filePath)
+    console.log('Removed')
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+// creates new empty file at cwd
+async function newFile (fileName) {
+  try {
+    let filePath = path.join(CurrentDirectory, fileName);
+    await fs.writeFile(filePath, "");
+    console.log('New File created!')
+  } 
+  catch (err) {
+    console.error(err)
+  }
+}
+
+// creates new folder at cwd
+async function newFolder (folderName) {
+  try {
+      let filePath = path.join(CurrentDirectory, folderName)
+      await fs.mkdir(filePath)
+      console.log('New Folder created!')
+  } catch (err) {
+      console.error(err)
+  }
+}
+
+// opens file
+async function openFile(fileName) {
+  try {
+    let filePath = path.join(CurrentDirectory, fileName)
+    shell.openItem(filePath)
+  } 
+  catch (err) {
+    console.error(err)
+  }
+}
+
+// moves file from one directory to another
+async function moveFile (src) {
+  const options = {
+      title : "Select New Directory",
+      defaultPath : CurrentDirectory,
+      buttonLabel : "Select Directory",
+      properties : ["openDirectory"]
+  }
+  let filePath = path.join(CurrentDirectory, src)
+  dialog.showOpenDialog( options, async (dest) => {
+      try {
+          let filename = path.parse(src)
+          let destPath = path.join(dest[0], filename.base)
+          await fs.move(filePath, destPath)
+          console.log('File moved to ' + destPath  + '!')
+        } catch (err) {
+          console.error(err)
+        }
+  })
+  
+}
+
+// copies file to specified directory
+async function copyFile(src) {
+  const options = {
+      title: "Select New Directory",
+      defaultPath : CurrentDirectory,
+      buttonLabel : "Select Directory",
+      properties : ["openDirectory"]
+  }
+
+  let filePath = path.join(CurrentDirectory, src)
+  dialog.showOpenDialog(win ,options, async (dest) => {
+      try {
+          let filename = path.parse(src)
+          let destPath = path.join(dest[0], filename.base)
+          await fs.copy(filePath, destPath)
+          console.log('File Copied to ' + destPath + '!')
+      } catch (err) {
+          console.error(err)
+      }
+  })
+}
