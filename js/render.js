@@ -3,6 +3,9 @@ const { dialog, app, BrowserWindow } = require('electron').remote;
 
 win = remote.getCurrentWindow();
 
+/*********************/
+/*    Phaser code    */
+/*********************/
 class Player {
     constructor(scene, x, y) {
       this.scene = scene;
@@ -159,11 +162,20 @@ const config = {
   
 const game = new Phaser.Game(config);
 
+/************************/
+/*    Directory code    */
+/************************/
 
-////// Directory code ///////
+// root for production
+//process.chdir('/')
+
+// root for Testing
 process.chdir('C:\\Users\\runin\\Documents\\TestDir')
 let CurrentDirectory = process.cwd();
+// Point where file system tree will be built
+const root = process.cwd();
 
+// moves cwd up or down a folder
 function changeDirectory(direction, folder){
   if(direction == 'up'){
     let filePath = path.dirname(CurrentDirectory)
@@ -217,7 +229,7 @@ async function remover(fileName){
 async function newFile (fileName) {
   try {
     let filePath = path.join(CurrentDirectory, fileName);
-    await fs.writeFile(filePath, "");
+    await fs.ensureFile(filePath);
     console.log('New File created!')
   } 
   catch (err) {
