@@ -24,4 +24,4 @@ This will run a script to start electron
 
 ## License & Attribution
 
-Made by Jose-Pablo Mantilla (JP&Co.™) for Advanced Javascript at USF.
+Made by Jose-Pablo Mantilla (JP&Co.™) for Advanced Javascript at USF (2019).
