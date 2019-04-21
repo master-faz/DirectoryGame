@@ -2,92 +2,82 @@ const Phaser = require('phaser');
 
 const config = {
     type: Phaser.AUTO, // Which renderer to use
-    width: 800, // Canvas width in pixels
-    height: 600, // Canvas height in pixels
+    width: 1000, // Canvas width in pixels
+    height: 320, // Canvas height in pixels
     parent: "game-container", // ID of the DOM element to add the canvas to
     scene: {
         preload: preload,
         create: create,
         update: update
-    }//,
-    // physics: {
-    //     default: "arcade",
-    //     arcade: {
-    //         gravity: { y: 0 } // Top down game, so no gravity
-    //     }
-    // }
-};
-  
-function getTileProperties() {
-
-    var x = layer.getTileX(game.input.activePointer.worldX);
-    var y = layer.getTileY(game.input.activePointer.worldY);
-
-    var tile = map.getTile(x, y, layer);
-    
-    // Note: JSON.stringify will convert the object tile properties to a string
-    currentDataString = JSON.stringify( tile.properties );
-
-    console.log(currentDataString)
-
+    },
+    physics: {
+        default: "arcade",
+        arcade: {
+            gravity: { y: 300 }, // Top down game, so no gravity
+            debug: true
+        }
     }
+};
 
 const game = new Phaser.Game(config);
 let player;
 let level = 1;
-  
+let scene;
+let cursors;
+let map;
+
 function preload() {
     this.load.image('terrain', 'assets/tilesets/terrain.png');
-    this.load.image('terrain2', 'assets/tilesets/terrain.tsx');
+    this.load.image('dirt', 'assets/tilesets/dirt.png');
 
-    this.load.tilemapTiledJSON('map_sm', 'assets/maps/RoomSmall.json')
-    this.load.tilemapTiledJSON('map_md', 'assets/maps/RoomMed.json')
     this.load.tilemapTiledJSON('map_lg', 'assets/maps/RoomLarge.json')
 
-    this.load.spritesheet(
-        "steve",
-        "assets/spritesheets/steve.png",
-        {
-            frameWidth: 30,
-            frameHeight: 60,
-            margin: 1,
-            spacing: 2
-        }
-    );
+    this.load.spritesheet('player', 'assets/spritesheets/player.png', {
+        frameWidth: 32,
+        frameHeight: 48,
+    })
+
+    //this.load.multiatlas("steve_atlas",'assets/spritesheets/sprites.json', 'assets/spritesheets');
 }
-  
+
 function create() {
     level++;
-    let map;
-    if(currSubDir.length < 3){
-        map = this.make.tilemap({ key: "map_sm"});
-    }else if(currSubDir.length < 10){
-        map = this.make.tilemap({ key: "map_md"});
-    }else{
-        map = this.make.tilemap({ key: "map_lg"});
-    }
+    map = this.make.tilemap({ key: "map_lg" });
+    scene = this;
 
-    game.input.mouse.onMouseDown(getTileProperties)
     //opens option menu when 'K' is pressed
     this.input.keyboard.on('keydown_K', openOption, this);
 
     const tileset = map.addTilesetImage('terrain', "terrain");
     const belowLayer = map.createDynamicLayer("Background", tileset, 0, 0).setScale(2);
     const groundLayer = map.createDynamicLayer("Ground", tileset, 0, 0).setScale(2);
+    const fileLayer = map.createBlankDynamicLayer('Files', tileset, 0, 0).setScale(2);
 
-    groundLayer.forEachTile((tile)=>{
-        if(tile.index == 84){
-            if(level == 1){
-                groundLayer.removeTileAt(tile.x, tile.y)
-            }else{
+
+
+    groundLayer.forEachTile((tile) => {
+        if (tile.index == 84) {
+            groundLayer.removeTileAt(tile.x, tile.y)
+            if (level != 1) {
+                fileLayer.putTileAt(84, tile.x, tile.y);
                 tile.properties.changeDirectory = 'up';
             }
         }
-        
     })
 
-    for(let i = 0; i < currSubDir.length; ++i){
-        let x = Math.floor( ((i+3) * currSubDir.length)/ 2);
+    // This will set Tile ID 84 (ladder) to call the function "changeDirectory" when collided with
+    fileLayer.setCollision(84)
+    fileLayer.setTileIndexCallback(84, () => console.log('hit ladder'), this);
+    fileLayer.setCollision(26)
+    fileLayer.setTileIndexCallback(36, () => console.log('hit books'), this);
+    fileLayer.setCollision(82)
+    fileLayer.setTileIndexCallback(82, () => console.log('hit door'), this);
+    groundLayer.setCollisionBetween(1, 5);
+
+
+    for (let i = 0; i < currSubDir.length; ++i) {
+        let x = (i * 2) + 6;
+
         const y = 5;
 
         const filePath = path.join(CurrentDirectory, currSubDir[i])
@@ -95,69 +85,82 @@ function create() {
         const letname = currSubDir[i]
         let curTile;
 
-        if(stats.isDirectory()){
+        if (stats.isDirectory()) {
             //places dark tile in background
             belowLayer.putTileAt(168, x, y)
-            belowLayer.putTileAt(168, x, y+1)
+            belowLayer.putTileAt(168, x, y + 1)
             // places door in foreground
-            groundLayer.putTileAt(82, x, y)
-            groundLayer.putTileAt(98, x, y+1)
-            
-            curTile = groundLayer.getTileAt(x, y)
+            fileLayer.putTileAt(82, x, y)
+            fileLayer.putTileAt(98, x, y + 1)
+
+            curTile = fileLayer.getTileAt(x, y)
             curTile.properties.changeDirectory = 'down';
             curTile.properties.directory = currSubDir[i];
 
-        }else if(stats.isFile()){
-            if(stats.size < 300000){
-                groundLayer.putTileAt(36, x, y+1)
-                curTile = groundLayer.getTileAt(x, y+1)
+        } else if (stats.isFile()) {
+            if (stats.size < 300000) {
+                fileLayer.putTileAt(36, x, y + 1)
+                curTile = fileLayer.getTileAt(x, y + 1)
                 curTile.properties.fileName = currSubDir[i];
-            }else if(stats.size < 1000000){
-                groundLayer.putTileAt(36, x, y+1)
-                groundLayer.putTileAt(36, x, y);
-                curTile = groundLayer.getTileAt(x, y+1)
+            } else if (stats.size < 1000000) {
+                fileLayer.putTileAt(36, x, y + 1)
+                fileLayer.putTileAt(36, x, y);
+                curTile = fileLayer.getTileAt(x, y + 1)
                 curTile.properties.fileName = currSubDir[i];
-            }else{
-                groundLayer.putTileAt(36, x, y+1);
-                groundLayer.putTileAt(36, x, y);
-                groundLayer.putTileAt(36, x, y-1);
-                curTile = groundLayer.getTileAt(x, y+1)
+            } else {
+                fileLayer.putTileAt(36, x, y + 1);
+                fileLayer.putTileAt(36, x, y);
+                fileLayer.putTileAt(36, x, y - 1);
+                curTile = fileLayer.getTileAt(x, y + 1)
                 curTile.properties.fileName = currSubDir[i];
-            }           
+            }
         }
     }
-    
-
-    groundLayer.setCollision(3)
-
-    //player = this.physics.add.sprite(400, 350, "steve");
 
 
+    player = this.physics.add.sprite(0, 0, 'player').setPosition(100, 180);
+    player.setBounce(0.1);
+    player.setCollideWorldBounds(true)
+    player.body.setGravityY(300)
+    var col2 = this.physics.add.collider(player, groundLayer);
+    var col1 = this.physics.add.overlap(player, fileLayer);
 
+    //  Our player animations, turning, walking left and walking right.
+    this.anims.create({
+        key: 'left',
+        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+    });
 
+    this.anims.create({
+        key: 'turn',
+        frames: [{ key: 'dude', frame: 4 }],
+        frameRate: 20
+    });
 
-    // Phaser supports multiple cameras, but you can access the default camera like this:
-    const camera = this.cameras.main;
+    this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+        frameRate: 10,
+        repeat: -1
+    });
 
-    // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap
-    camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    //camera.startFollow(this.player.sprite);
-
+    cursors = this.input.keyboard.createCursorKeys();
     // Help text that has a "fixed" position on the screen
     this.add
-      .text(16, 270, "Use Arrow keys to move and K for actions", {
-        font: "18px monospace",
-        fill: "#000000",
-        padding: { x: 20, y: 10 },
-        backgroundColor: "#ffffff"
-      })
-      .setScrollFactor(0);
+        .text(16, 270, "Use Arrow keys to move and K for actions", {
+            font: "18px monospace",
+            fill: "#000000",
+            padding: { x: 20, y: 10 },
+            backgroundColor: "#ffffff"
+        })
+        .setScrollFactor(0);
 }
-  
+
 function update(time, delta) {
     // Runs once per frame for the duration of the scene
-    const keys = this.keys;
-    const sprite = this.sprite;
+    const sprite = player;
     const speed = 300;
     const prevVelocity = sprite.body.velocity.clone();
 
@@ -165,19 +168,21 @@ function update(time, delta) {
     sprite.body.setVelocity(0);
 
     // Horizontal movement
-    if (keys.left.isDown) {
+    if (cursors.left.isDown) {
         sprite.body.setVelocityX(-speed);
         sprite.setFlipX(true);
-      } else if (keys.right.isDown) {
+    } else if (cursors.right.isDown) {
         sprite.body.setVelocityX(speed);
         sprite.setFlipX(false);
-      }
-      // Navigates directory
-      if (keys.up.isDown && collision) {
-        //get tile collision
+    }
+    //   // Navigates directory
 
-        //changeDirectory()
-      }
+
+    //   if (cursors.up.isDown && collision) {
+    //     //get tile collision
+
+    //     //changeDirectory()
+    //   }
 
     //on collision with bookcase
 
@@ -189,4 +194,10 @@ function update(time, delta) {
     //         backgroundColor: "#ffffff"
     //     })
     //     .setScrollFactor(0);
+}
+
+function tileChangeDir(tile) {
+    if (cursors.up.isDown) {
+        changeDirectory(tile)
+    }
 }

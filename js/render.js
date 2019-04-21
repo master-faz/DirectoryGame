@@ -4,6 +4,24 @@ const { dialog, app, BrowserWindow } = require('electron').remote;
 win = remote.getCurrentWindow();
 
 /************************/
+/*    Event Listeners   */
+/************************/
+
+
+
+let folderBtn = document.getElementById('newFolderBtn');
+folderBtn.addEventListener('click', () => {
+  let folderName = document.getElementById('newFolderName').value;
+  newFolder(folderName)
+})
+
+let fileBtn = document.getElementById('newFileBtn');
+fileBtn.addEventListener('click', () => {
+  let fileName = document.getElementById('newFileName').value;
+  newFile(fileName)
+})
+
+/************************/
 /*    Directory code    */
 /************************/
 
@@ -18,7 +36,7 @@ fs.readdir(CurrentDirectory, (err, files) => {
     alert('Error getting sub directories')
   }
   currSubDir = files;
-  console.log(currSubDir);
+  document.getElementById('currDirectory').innerText = CurrentDirectory;
 })
 // Point where file system tree will be built
 const root = process.cwd();
@@ -35,6 +53,8 @@ function changeDirectory(direction, folder){
     process.chdir(filePath)
     CurrentDirectory = process.cwd();
   }
+
+  document.getElementById('currDirectory').innerText = CurrentDirectory;
 
   fs.readdir(CurrentDirectory, (err, files) => {
     if(err){

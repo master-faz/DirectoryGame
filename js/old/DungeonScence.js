@@ -108,12 +108,12 @@ class DungeonScene extends Phaser.Scene {
     // Watch the player and ground layer for collisions, for the duration of the scene:
     this.physics.add.collider(this.player.sprite, this.groundLayer);
 
-    // Phaser supports multiple cameras, but you can access the default camera like this:
-    const camera = this.cameras.main;
+    // // Phaser supports multiple cameras, but you can access the default camera like this:
+    // const camera = this.cameras.main;
 
-    // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap
-    camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    camera.startFollow(this.player.sprite);
+    // // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap
+    // camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    // camera.startFollow(this.player.sprite);
 
     // Help text that has a "fixed" position on the screen
     this.add
