@@ -42,11 +42,9 @@ function preload() {
 
 function create() {
     level++;
+    hasChangedDir = false;
     map = this.make.tilemap({ key: "map_lg" });
     scene = this;
-
-    //opens option menu when 'K' is pressed
-    this.input.keyboard.on('keydown_K', openOption, this);
 
     const tileset = map.addTilesetImage('terrain', "terrain");
     const belowLayer = map.createDynamicLayer("Background", tileset, 0, 0).setScale(2);
@@ -54,31 +52,48 @@ function create() {
     const fileLayer = map.createBlankDynamicLayer('Files', tileset, 0, 0).setScale(2);
 
 
-
     groundLayer.forEachTile((tile) => {
         if (tile.index == 84) {
             groundLayer.removeTileAt(tile.x, tile.y)
             if (level != 1) {
                 fileLayer.putTileAt(84, tile.x, tile.y);
-                tile.properties.changeDirectory = 'up';
+                let newTile = fileLayer.getTileAt(tile.x, tile.y)
+                newTile.properties.changeDirectory = 'up';
             }
         }
     })
 
     // This will set Tile ID 84 (ladder) to call the function "changeDirectory" when collided with
     fileLayer.setCollision(84)
-    fileLayer.setTileIndexCallback(84, () => console.log('hit ladder'), this);
+    fileLayer.setTileIndexCallback(84, (player, tile) => {
+        tileChangeDir(tile.properties)
+    }, this);
+    // This will set Tile ID 26 (books) to call the function "changeDirectory" when collided with
     fileLayer.setCollision(26)
-    fileLayer.setTileIndexCallback(36, () => console.log('hit books'), this);
+    fileLayer.setTileIndexCallback(36, (player, tile) => {
+        selectFile(tile.properties)
+    }, this);
+    // This will set Tile ID 82 (door) to call the function "changeDirectory" when collided with
     fileLayer.setCollision(82)
-    fileLayer.setTileIndexCallback(82, () => console.log('hit door'), this);
+    fileLayer.setTileIndexCallback(82, (player, tile) => {
+        tileChangeDir(tile.properties)
+    }, this);
+
+
+    // makes it so player can't occupy ground tiles
     groundLayer.setCollisionBetween(1, 5);
 
+    if(currSubDir.length == null){
+        currSubDir.length = 0
+    }
 
     for (let i = 0; i < currSubDir.length; ++i) {
         let x = (i * 2) + 6;
-
         const y = 5;
+
+        if(i > 13){
+            break;
+        }
 
         const filePath = path.join(CurrentDirectory, currSubDir[i])
         const stats = fs.statSync(filePath);
@@ -149,7 +164,7 @@ function create() {
     cursors = this.input.keyboard.createCursorKeys();
     // Help text that has a "fixed" position on the screen
     this.add
-        .text(16, 270, "Use Arrow keys to move and K for actions", {
+        .text(16, 270, "Use Arrow keys to move", {
             font: "18px monospace",
             fill: "#000000",
             padding: { x: 20, y: 10 },
@@ -175,29 +190,27 @@ function update(time, delta) {
         sprite.body.setVelocityX(speed);
         sprite.setFlipX(false);
     }
-    //   // Navigates directory
-
-
-    //   if (cursors.up.isDown && collision) {
-    //     //get tile collision
-
-    //     //changeDirectory()
-    //   }
-
-    //on collision with bookcase
-
-    // this.add
-    //     .text(16, 16, tile.properties.fileName, {
-    //         font: "18px monospace",
-    //         fill: "#000000",
-    //         padding: { x: 20, y: 10 },
-    //         backgroundColor: "#ffffff"
-    //     })
-    //     .setScrollFactor(0);
+    if(hasChangedDir){
+        return
+    }
 }
 
 function tileChangeDir(tile) {
-    if (cursors.up.isDown) {
-        changeDirectory(tile)
+    if(tile.changeDirectory == 'up'){
+        document.getElementById('currSelected').innerText = path.dirname(CurrentDirectory)
+        deleteBtn.disabled = true;
+    }else{
+        deleteBtn.disabled = false;
+        document.getElementById('currSelected').innerText = tile.directory
     }
+    
+    if (cursors.up.isDown && !hasChangedDir) {
+        changeDirectory(tile.changeDirectory, tile.directory)
+        scene.scene.restart();
+    }   
+}
+
+function selectFile(tile){
+    deleteBtn.disabled = false;
+    document.getElementById('currSelected').innerText = tile.fileName;
 }

@@ -28,14 +28,9 @@
 
 <body>
   <div id='game-container'></div>
-  <div class='container' id='menu'>
+
+  <div class='container my-3' id='menu'>
     <table class="table table-striped">
-      <thead>
-        <tr>
-          <th scope="col"></th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
       <tbody>
         <tr>
           <th scope="row">Current Folder:</th>
@@ -57,8 +52,29 @@
             <button type="button" class="btn btn-info" id='newFolderBtn'>Create New Folder</button>
           </td>
         </tr>
+        <tr>
+          <th scope="row">Currently Selected</th>
+          <td id='currSelected'></td>
+        </tr>
       </tbody>
     </table>
+    <div class='row'>
+        <div class='col'>
+          <button type="button" class="btn btn-info" id='openFileBtn'>Open File</button>
+        </div>
+        <div class='col'>
+            <button type="button" class="btn btn-info" id='infoFileBtn'>File Info</button>
+          </div>
+        <div class='col'>
+          <button type="button" class="btn btn-info" id='moveFileBtn'>Move File</button>
+        </div>
+        <div class='col'>
+          <button type="button" class="btn btn-info" id='copyFileBtn'>Copy File</button>
+        </div>
+        <div class='col'>
+            <button type="button" class="btn btn-info" id='deleteFileBtn'>Delete File</button>
+          </div>
+      </div>
   </div>
   <script>
     const fs = require('fs-extra');
