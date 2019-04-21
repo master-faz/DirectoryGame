@@ -8,35 +8,6 @@ win = remote.getCurrentWindow();
 /************************/
 
 let selected = document.getElementById('currSelected');
-setInterval(function(){ 
-  selected.innerText = null;
-  deleteBtn.disabled = false;
- }, 6000);
-// listens for click event for buttons at bottom of table
-let openBtn = document.getElementById('openFileBtn');
-openBtn.addEventListener('click', () => {
-  openFile(selected.innerText)
-})
-
-let infoBtn = document.getElementById('infoFileBtn');
-infoBtn.addEventListener('click', () => {
-  getFileInfo(selected.innerText)
-})
-
-let deleteBtn = document.getElementById('deleteFileBtn');
-deleteBtn.addEventListener('click', () => {
-  remover(selected.innerText)
-})
-
-let moveBtn = document.getElementById('moveFileBtn');
-moveBtn.addEventListener('click', () => {
-  moveFile(selected.innerText)
-})
-
-let copyBtn = document.getElementById('copyFileBtn');
-copyBtn.addEventListener('click', () => {
-  copyFile(selected.innerText)
-})
 
 // adds new folder when button is clicked
 let folderBtn = document.getElementById('newFolderBtn');
@@ -56,14 +27,48 @@ fileBtn.addEventListener('click', () => {
   }
 })
 
+// listens for click event for buttons at bottom of table
+let openBtn = document.getElementById('openFileBtn');
+openBtn.addEventListener('click', () => {
+  openFile(selected.innerText)
+})
+
+let infoBtn = document.getElementById('infoFileBtn');
+infoBtn.addEventListener('click', () => {
+  if (selected.innerText != null) {
+    getFileInfo(selected.innerText)
+  }
+})
+
+let deleteBtn = document.getElementById('deleteFileBtn');
+deleteBtn.addEventListener('click', () => {
+  if (selected.innerText != null) {
+    remover(selected.innerText)
+  }
+})
+
+let moveBtn = document.getElementById('moveFileBtn');
+moveBtn.addEventListener('click', () => {
+  if (selected.innerText != null) {
+    moveFile(selected.innerText)
+  }
+})
+
+let copyBtn = document.getElementById('copyFileBtn');
+copyBtn.addEventListener('click', () => {
+  if (selected.innerText != null) {
+    copyFile(selected.innerText)
+  }
+})
+
 /************************/
-/*    Directory code    */
+/*   Global Variables   */
 /************************/
 
-
-// root for Testing
+// sets starting directory and assigns to global varaible
 process.chdir('C:\\Users\\runin\\Documents\\TestDir')
 let CurrentDirectory = process.cwd();
+//gets sub-directories
 fs.readdir(CurrentDirectory, (err, files) => {
   if (err) {
     alert('Error getting sub directories')
@@ -75,6 +80,13 @@ fs.readdir(CurrentDirectory, (err, files) => {
 const root = process.cwd();
 let currSubDir;
 let hasChangedDir = false;
+let hasContentChanged = false;
+
+
+/***************************/
+/*    Directory methods    */
+/***************************/
+
 
 // moves cwd up or down a folder
 function changeDirectory(direction, folder) {
@@ -136,6 +148,7 @@ async function remover(fileName) {
   try {
     let filePath = path.join(CurrentDirectory, fileName)
     await fs.remove(filePath)
+    hasContentChanged = true;
     alert('Removed')
   } catch (err) {
     console.error(err)
@@ -147,6 +160,7 @@ async function newFile(fileName) {
   try {
     let filePath = path.join(CurrentDirectory, fileName);
     await fs.ensureFile(filePath);
+    hasContentChanged = true;
     alert('New File created!')
   }
   catch (err) {
@@ -157,8 +171,9 @@ async function newFile(fileName) {
 // creates new folder at cwd
 async function newFolder(folderName) {
   try {
-    let filePath = path.join(CurrentDirectory, folderName)
-    await fs.mkdir(filePath)
+    let filePath = path.join(CurrentDirectory, folderName);
+    await fs.mkdir(filePath);
+    hasContentChanged = true;
     alert('New Folder created!')
   } catch (err) {
     console.error(err)
@@ -195,7 +210,6 @@ async function moveFile(src) {
       console.error(err)
     }
   })
-
 }
 
 // copies file to specified directory
@@ -220,6 +234,7 @@ async function copyFile(src) {
   })
 }
 
+// formats file size
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
 
@@ -230,4 +245,23 @@ function formatBytes(bytes, decimals = 2) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+// sets selected file/folder to null and disables buttons
+setInterval(function () {
+  selected.innerText = null;
+  deleteBtn.disabled = true;
+  openBtn.disabled = true;
+  copyBtn.disabled = true;
+  moveBtn.disabled = true;
+  infoBtn.disabled = true;
+}, 4000);
+
+// enables buttons
+function enableButtons() {
+  deleteBtn.disabled = false;
+  copyBtn.disabled = false;
+  moveBtn.disabled = false;
+  infoBtn.disabled = false;
+  openBtn.disabled = false;
 }

@@ -14,7 +14,6 @@ const config = {
         default: "arcade",
         arcade: {
             gravity: { y: 300 }, // Top down game, so no gravity
-            debug: true
         }
     }
 };
@@ -22,7 +21,7 @@ const config = {
 const game = new Phaser.Game(config);
 let player;
 let level = 1;
-let scene;
+let sceneVar;
 let cursors;
 let map;
 
@@ -44,7 +43,7 @@ function create() {
     level++;
     hasChangedDir = false;
     map = this.make.tilemap({ key: "map_lg" });
-    scene = this;
+    sceneVar = this;
 
     const tileset = map.addTilesetImage('terrain', "terrain");
     const belowLayer = map.createDynamicLayer("Background", tileset, 0, 0).setScale(2);
@@ -67,16 +66,19 @@ function create() {
     fileLayer.setCollision(84)
     fileLayer.setTileIndexCallback(84, (player, tile) => {
         tileChangeDir(tile.properties)
+        enableButtons()
     }, this);
     // This will set Tile ID 26 (books) to call the function "changeDirectory" when collided with
     fileLayer.setCollision(26)
     fileLayer.setTileIndexCallback(36, (player, tile) => {
         selectFile(tile.properties)
+        enableButtons()
     }, this);
     // This will set Tile ID 82 (door) to call the function "changeDirectory" when collided with
     fileLayer.setCollision(82)
     fileLayer.setTileIndexCallback(82, (player, tile) => {
         tileChangeDir(tile.properties)
+        enableButtons()
     }, this);
 
 
@@ -137,8 +139,8 @@ function create() {
     player.setBounce(0.1);
     player.setCollideWorldBounds(true)
     player.body.setGravityY(300)
-    var col2 = this.physics.add.collider(player, groundLayer);
-    var col1 = this.physics.add.overlap(player, fileLayer);
+    this.physics.add.collider(player, groundLayer);
+    this.physics.add.overlap(player, fileLayer);
 
     //  Our player animations, turning, walking left and walking right.
     this.anims.create({
@@ -177,7 +179,6 @@ function update(time, delta) {
     // Runs once per frame for the duration of the scene
     const sprite = player;
     const speed = 300;
-    const prevVelocity = sprite.body.velocity.clone();
 
     // Stop any previous movement from the last frame
     sprite.body.setVelocity(0);
@@ -193,6 +194,16 @@ function update(time, delta) {
     if(hasChangedDir){
         return
     }
+    if(hasContentChanged){
+        hasContentChanged = false;
+        fs.readdir(CurrentDirectory, (err, files) => {
+            if (err) {
+              alert('Error getting sub directories')
+            }
+            currSubDir = files;
+        })
+        sceneVar.scene.restart();
+    }
 }
 
 function tileChangeDir(tile) {
@@ -206,7 +217,7 @@ function tileChangeDir(tile) {
     
     if (cursors.up.isDown && !hasChangedDir) {
         changeDirectory(tile.changeDirectory, tile.directory)
-        scene.scene.restart();
+        sceneVar.scene.restart();
     }   
 }
 

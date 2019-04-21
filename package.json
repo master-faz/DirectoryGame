@@ -13,9 +13,6 @@
     "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
-    "@mikewesthad/dungeon": "^1.2.2",
-    "bootstrap": "^4.3.1",
-    "eslint": "^5.16.0",
     "fs-extra": "^7.0.1",
     "phaser": "^3.16.2"
   }
