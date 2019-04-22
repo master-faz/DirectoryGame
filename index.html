@@ -2,89 +2,103 @@
 <html>
 
 <head>
-  <title>Directory Game</title>
-  <style>
-    body {
-      margin: 0;
-      background-color: antiquewhite!important;
-    }
+    <title>Directory Game</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: antiquewhite !important;
+        }
 
-    canvas {
-      width: 100%;
-      height: 100%
-    }
-  </style>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-    crossorigin="anonymous"></script>
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-    crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-    crossorigin="anonymous"></script>
+        canvas {
+            width: 100%;
+            height: 100%
+        }
+    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <div id='game-container'></div>
+    <div class="mx-auto pt-3" id="game-container"></div>
 
-  <div class='container my-3 p-2' id='menu' style="border:2px solid black; background-color:#343a40">
-    <table class="table table-striped table-dark">
-      <tbody>
-        <tr>
-          <th scope="row">Current Folder:</th>
-          <td id='currDirectory'></td>
-        </tr>
-        <tr>
-          <th scope="row">
-            <input type="text" class="form-control" id='newFileName' placeholder="File Name">
-          </th>
-          <td>
-            <button type="button" class="btn btn-info" id='newFileBtn'>Create New File</button>
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">
-            <input type="text" class="form-control" id='newFolderName' placeholder="Folder Name">
-          </th>
-          <td>
-            <button type="button" class="btn btn-info" id='newFolderBtn'>Create New Folder</button>
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Currently Selected</th>
-          <td id='currSelected'></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class='row'>
-        <div class='col'>
-          <button type="button" class="btn btn-info" id='openFileBtn'>Open File</button>
-        </div>
-        <div class='col'>
-            <button type="button" class="btn btn-info" id='infoFileBtn'>File Info</button>
-          </div>
-        <div class='col'>
-          <button type="button" class="btn btn-info" id='moveFileBtn'>Move File</button>
-        </div>
-        <div class='col'>
-          <button type="button" class="btn btn-info" id='copyFileBtn'>Copy File</button>
-        </div>
-        <div class='col'>
-            <button type="button" class="btn btn-info" id='deleteFileBtn'>Delete File</button>
-          </div>
-      </div>
-  </div>
-  <script>
-    const fs = require('fs-extra');
-    const path = require('path');
-    const { shell, remote } = require('electron')  
-  </script>
+    <div class="container my-3 p-2" id="menu" style="border:2px solid black; background-color:#343a40">
+        <table class="table table-striped table-dark">
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="row">
+                            <div class="col-auto">Current Folder:</div>
+                            <div class="col-auto" id="currDirectory"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col-auto">Currently Selected:</div>
+                            <div class="col-auto" id="currSelected"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:50%">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" id="newFileName" placeholder="File Name">
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-success" id="newFileBtn">Create New File</button>
+                            </div>
+                        </div>
 
-  <script src="js/files.js"></script>
-  <script src="js/scene.js"></script>
+                        </th>
+                    <td style="width:50%">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" id="newFolderName" placeholder="Folder Name">
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-success" id="newFolderBtn">Create New
+                                    Folder</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-success" id="openFileBtn">Open File</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-info" id="infoFileBtn">File Info</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-warning" id="moveFileBtn">Move File</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-warning" id="copyFileBtn">Copy File</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-danger" id="deleteFileBtn">Delete File</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const fs = require('fs-extra');
+        const path = require('path');
+        const { shell, remote } = require('electron')  
+    </script>
+
+    <script src="js/files.js"></script>
+    <script src="js/scene.js"></script>
 </body>
 
 </html>
